@@ -1,0 +1,119 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: eduardorvieira
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: Clinic-aws
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "events:*"
+            - "dynamodb:*"
+            - "cognito-idp:*"
+          Resource: "*"
+
+        
+# Lambda functions
+functions:
+  getPatients:
+    handler: src/patient/functions/getPatients.handler
+    name: ${sls:stage}-getPatient
+    events:
+      - httpApi:
+          method: get
+          path: /patients
+
+# Auth functions
+  login:
+    handler: src/auth/functions/login.handler
+    name: ${sls:stage}-login
+    events:
+      - httpApi:
+          method: post
+          path: /auth/login
+
+  signup:
+    handler: src/auth/functions/signup.handler
+    name: ${sls:stage}-signup
+    events:
+      - httpApi:
+          method: post
+          path: /auth/signup
+
+
+resources:
+  Resources:
+  # Cognito User Pool
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${sls:stage}-ClinicUserPool
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+            RequireUppercase: true
+        Schema:
+          - Name: email
+            Required: true
+            Mutable: true
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        MfaConfiguration: OFF
+        EmailVerificationSubject: Your verification code
+        EmailVerificationMessage: Your verification code is {####}
+        SmsVerificationMessage: Your verification code is {####}
+        SmsAuthenticationMessage: Your authentication code is {####}
+        UserPoolTags:
+          "Name": "${sls:stage}-ClinicUserPool"
+
+    # Cognito User Pool Client
+    UserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${sls:stage}-ClinicUserPoolClient
+        UserPoolId:
+          Ref: UserPool
+        GenerateSecret: false
+        ExplicitAuthFlows:
+          - ADMIN_NO_SRP_AUTH
+          - USER_PASSWORD_AUTH
+        SupportedIdentityProviders:
+          - COGNITO
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthFlows:
+          - code
+        AllowedOAuthScopes:
+          - email
+          - openid
+          - profile
+        CallbackURLs:
+          - http://localhost:3000/callback
+        LogoutURLs:
+          - http://localhost:3000/callback
+
+    # Cognito User Pool Groups
+    AdminPoolGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: ${sls:stage}-Admins
+        Description: Admins users with elevated permissions
+        Precedence: 1
+        UserPoolId:
+          Ref: UserPool
+
+    UserPoolGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: ${sls:stage}-Users
+        UserPoolId:
+          Ref: UserPool
