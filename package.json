@@ -1,0 +1,25 @@
+{
+  "name": "clinic-aws",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.679.0",
+    "@aws-sdk/client-eventbridge": "^3.679.0",
+    "@middy/core": "^4.7.0",
+    "@middy/http-content-negotiation": "^4.7.0",
+    "@middy/http-error-handler": "^4.7.0",
+    "@middy/http-header-normalizer": "^4.7.0",
+    "@middy/http-json-body-parser": "^4.7.0",
+    "@middy/http-response-serializer": "^4.7.0",
+    "dotenv": "^16.4.5",
+    "dynamoose": "^4.0.2",
+    "serverless": "^4.4.7"
+  }
+}
