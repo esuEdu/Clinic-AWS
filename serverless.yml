@@ -44,7 +44,14 @@ functions:
       - httpApi:
           method: post
           path: /auth/signup
-
+  
+  confirmSignup:
+    handler: src/auth/functions/confirmSignup.handler
+    name: ${sls:stage}-confirmSignup
+    events:
+      - httpApi:
+          method: post
+          path: /auth/confirmSignup
 
 resources:
   Resources:

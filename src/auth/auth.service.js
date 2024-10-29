@@ -6,6 +6,7 @@ dotenv.config();
 import {
   CognitoIdentityProviderClient,
   SignUpCommand,
+  ConfirmSignUpCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 async function login(event) {
@@ -58,7 +59,28 @@ async function signup(event) {
   }
 }
 
+async function confirmSignup(event) {
+  const { email, code } = event.body;
+  const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
+
+  const params = {
+    ClientId: process.env.COGNITO_CLIENT_ID,
+    ConfirmationCode: code,
+    Username: email,
+  };
+
+  try {
+    const command = new ConfirmSignUpCommand(params);
+    const data = await client.send(command);
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 export default {
   login,
   signup,
+  confirmSignup,
 };
