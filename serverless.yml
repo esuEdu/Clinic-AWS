@@ -69,6 +69,14 @@ functions:
           method: post
           path: /auth/forgotPassword
 
+  confirmForgotPassword:
+    handler: src/auth/functions/confirmForgotPassword.handler
+    name: ${sls:stage}-confirmForgotPassword
+    events:
+      - httpApi:
+          method: post
+          path: /auth/confirmForgotPassword
+
 resources:
   Resources:
   # Cognito User Pool
