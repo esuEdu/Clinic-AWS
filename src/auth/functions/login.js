@@ -11,19 +11,19 @@ const login = async (event) => {
     const data = await authService.login(event);
     const response = {
       statusCode: 200,
-      body: JSON.stringify({
+      body: {
         message: "User logged successfully",
         data,
-      }),
+      },
     };
     return response;
   } catch (error) {
     const response = {
       statusCode: 400,
-      body: JSON.stringify({
+      body: {
         message: "Error logging in user",
         error: error.message,
-      }),
+      },
     };
     return response;
   }

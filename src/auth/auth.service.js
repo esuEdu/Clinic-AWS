@@ -5,6 +5,7 @@ dotenv.config();
 // Import AWS Cognito SDK
 import {
   CognitoIdentityProviderClient,
+  InitiateAuthCommand,
   SignUpCommand,
   ConfirmSignUpCommand,
   ResendConfirmationCodeCommand,
@@ -13,20 +14,21 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 
 async function login(event) {
-  const { username, password } = event.body;
+  const { email, password } = event.body;
   const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
 
   const params = {
     AuthFlow: "USER_PASSWORD_AUTH",
     ClientId: process.env.COGNITO_CLIENT_ID,
     AuthParameters: {
-      USERNAME: username,
+      USERNAME: email,
       PASSWORD: password,
     },
   };
 
   try {
-    const data = await client.initiateAuth(params);
+    const command = new InitiateAuthCommand(params);
+    const data = await client.send(command);
     return data;
   } catch (error) {
     console.error(error);
