@@ -146,5 +146,7 @@ resources:
       Type: AWS::Cognito::UserPoolGroup
       Properties:
         GroupName: ${sls:stage}-Users
+        Description: Users with basic permissions
+        precdence: 2
         UserPoolId:
           Ref: UserPool
