@@ -53,6 +53,14 @@ functions:
           method: post
           path: /auth/confirmSignup
 
+  resendCode:
+    handler: src/auth/functions/resendCode.handler
+    name: ${sls:stage}-resendCode
+    events:
+      - httpApi:
+          method: post
+          path: /auth/resendCode
+
 resources:
   Resources:
   # Cognito User Pool
