@@ -61,6 +61,14 @@ functions:
           method: post
           path: /auth/resendCode
 
+  forgotPassword:
+    handler: src/auth/functions/forgotPassword.handler
+    name: ${sls:stage}-forgotPassword
+    events:
+      - httpApi:
+          method: post
+          path: /auth/forgotPassword
+
 resources:
   Resources:
   # Cognito User Pool
