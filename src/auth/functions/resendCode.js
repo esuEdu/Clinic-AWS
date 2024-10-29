@@ -12,7 +12,7 @@ const resendCode = async (event) => {
     const response = {
       statusCode: 200,
       body:{
-        message: "User confirmed successfully",
+        message: "Verification code resent successfully",
         data,
       },
     };
@@ -21,7 +21,7 @@ const resendCode = async (event) => {
     const response = {
       statusCode: 400,
       body: {
-        message: "Error confirming user",
+        message: "Failed to resend verification code",
         error: error.message,
       },
     };
