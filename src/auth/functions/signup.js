@@ -4,6 +4,7 @@ import httpJsonBodyParser from "@middy/http-json-body-parser";
 import httpHeaderNormalizer from "@middy/http-header-normalizer";
 import httpContentNegotiation from "@middy/http-content-negotiation";
 import httpResponseSerializer from "@middy/http-response-serializer";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import authService from "../auth.service.js";
 
 const signup = async (event) => {
@@ -21,7 +22,7 @@ const signup = async (event) => {
     console.error(error);
     const response = {
       statusCode: 400,
-      body:{
+      body: {
         message: "Error registering user",
         error: error.message,
       },
@@ -31,6 +32,7 @@ const signup = async (event) => {
 };
 
 export const handler = middy()
+  .use(httpSecurityHeaders())
   .use(httpHeaderNormalizer())
   .use(httpContentNegotiation())
   .use(

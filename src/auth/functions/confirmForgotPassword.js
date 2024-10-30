@@ -4,6 +4,7 @@ import httpJsonBodyParser from "@middy/http-json-body-parser";
 import httpHeaderNormalizer from "@middy/http-header-normalizer";
 import httpContentNegotiation from "@middy/http-content-negotiation";
 import httpResponseSerializer from "@middy/http-response-serializer";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import authService from "../auth.service.js";
 
 const confirmForgotPassword = async (event) => {
@@ -11,10 +12,10 @@ const confirmForgotPassword = async (event) => {
     const data = await authService.confirmForgotPassword(event);
     const response = {
       statusCode: 200,
-        body:{
-            message: "Password reset successfully",
-            data,
-        },
+      body: {
+        message: "Password reset successfully",
+        data,
+      },
     };
     return response;
   } catch (error) {
@@ -30,6 +31,7 @@ const confirmForgotPassword = async (event) => {
 };
 
 export const handler = middy()
+  .use(httpSecurityHeaders())
   .use(httpHeaderNormalizer())
   .use(httpContentNegotiation())
   .use(
@@ -54,4 +56,3 @@ export const handler = middy()
   .use(httpErrorHandler())
   .use(httpJsonBodyParser({ disableContentTypeError: true }))
   .handler(confirmForgotPassword);
-

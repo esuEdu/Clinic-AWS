@@ -4,6 +4,7 @@ import httpJsonBodyParser from "@middy/http-json-body-parser";
 import httpHeaderNormalizer from "@middy/http-header-normalizer";
 import httpContentNegotiation from "@middy/http-content-negotiation";
 import httpResponseSerializer from "@middy/http-response-serializer";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import authService from "../auth.service.js";
 
 const resendCode = async (event) => {
@@ -11,7 +12,7 @@ const resendCode = async (event) => {
     const data = await authService.resendCode(event);
     const response = {
       statusCode: 200,
-      body:{
+      body: {
         message: "Verification code resent successfully",
         data,
       },
@@ -30,6 +31,7 @@ const resendCode = async (event) => {
 };
 
 export const handler = middy()
+  .use(httpSecurityHeaders())
   .use(httpHeaderNormalizer())
   .use(httpContentNegotiation())
   .use(
@@ -54,4 +56,3 @@ export const handler = middy()
   .use(httpErrorHandler())
   .use(httpJsonBodyParser({ disableContentTypeError: true }))
   .handler(resendCode);
-
