@@ -16,8 +16,15 @@ provider:
             - "dynamodb:*"
             - "cognito-idp:*"
           Resource: "*"
+  httpApi:
+    cors: true
+    authorizers:
+      userAuthorizer:
+        identitySource: $request.header.Authorization
+        issuerUrl: {"Fn::Join": ["", ["https://cognito-idp.us-east-1.amazonaws.com/", { Ref: UserPool }]]}
+        audience: { Ref: UserPoolClient }
 
-        
+
 # Lambda functions
 functions:
   getPatients:
@@ -27,6 +34,8 @@ functions:
       - httpApi:
           method: get
           path: /patients
+          authorizer:
+            name: userAuthorizer
 
 # Auth functions
   login:
@@ -147,6 +156,5 @@ resources:
       Properties:
         GroupName: ${sls:stage}-Users
         Description: Users with basic permissions
-        precdence: 2
         UserPoolId:
           Ref: UserPool
