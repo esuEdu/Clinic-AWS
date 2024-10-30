@@ -7,13 +7,13 @@ import httpResponseSerializer from "@middy/http-response-serializer";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import authService from "../auth.service.js";
 
-const login = async (event) => {
+const confirmForgotPassword = async (event) => {
   try {
-    const data = await authService.login(event);
+    const data = await authService.confirmForgotPassword(event);
     const response = {
       statusCode: 200,
       body: {
-        message: "User logged successfully",
+        message: "Password reset successfully",
         data,
       },
     };
@@ -22,7 +22,7 @@ const login = async (event) => {
     const response = {
       statusCode: 400,
       body: {
-        message: "Error logging in user",
+        message: "Failed to reset password",
         error: error.message,
       },
     };
@@ -55,4 +55,4 @@ export const handler = middy()
   )
   .use(httpErrorHandler())
   .use(httpJsonBodyParser({ disableContentTypeError: true }))
-  .handler(login);
+  .handler(confirmForgotPassword);

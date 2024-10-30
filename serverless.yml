@@ -16,8 +16,14 @@ provider:
             - "dynamodb:*"
             - "cognito-idp:*"
           Resource: "*"
+  httpApi:
+    cors: true
+    authorizers:
+      apiKeyAuthorizer:
+        type: request
+        functionName: apiKeyAuth
+        identitySource: $request.header.api-key
 
-        
 # Lambda functions
 functions:
   getPatients:
@@ -27,6 +33,8 @@ functions:
       - httpApi:
           method: get
           path: /patients
+          authorizer:
+            name: apiKeyAuthorizer
 
 # Auth functions
   login:
@@ -36,7 +44,8 @@ functions:
       - httpApi:
           method: post
           path: /auth/login
-
+          authorizer:
+            name: apiKeyAuthorizer
   signup:
     handler: src/auth/functions/signup.handler
     name: ${sls:stage}-signup
@@ -44,7 +53,9 @@ functions:
       - httpApi:
           method: post
           path: /auth/signup
-  
+          authorizer:
+            name: apiKeyAuthorizer  
+
   confirmSignup:
     handler: src/auth/functions/confirmSignup.handler
     name: ${sls:stage}-confirmSignup
@@ -52,6 +63,43 @@ functions:
       - httpApi:
           method: post
           path: /auth/confirmSignup
+          authorizer:
+            name: apiKeyAuthorizer
+
+  resendCode:
+    handler: src/auth/functions/resendCode.handler
+    name: ${sls:stage}-resendCode
+    events:
+      - httpApi:
+          method: post
+          path: /auth/resendCode
+          authorizer:
+            name: apiKeyAuthorizer
+
+  forgotPassword:
+    handler: src/auth/functions/forgotPassword.handler
+    name: ${sls:stage}-forgotPassword
+    events:
+      - httpApi:
+          method: post
+          path: /auth/forgotPassword
+          authorizer:
+            name: apiKeyAuthorizer
+
+  confirmForgotPassword:
+    handler: src/auth/functions/confirmForgotPassword.handler
+    name: ${sls:stage}-confirmForgotPassword
+    events:
+      - httpApi:
+          method: post
+          path: /auth/confirmForgotPassword
+          authorizer:
+            name: apiKeyAuthorizer
+
+  # authorization:
+  apiKeyAuth:
+    handler: src/authorization/functions/apiKeyAuth.handler
+  
 
 resources:
   Resources:
@@ -122,5 +170,6 @@ resources:
       Type: AWS::Cognito::UserPoolGroup
       Properties:
         GroupName: ${sls:stage}-Users
+        Description: Users with basic permissions
         UserPoolId:
           Ref: UserPool
