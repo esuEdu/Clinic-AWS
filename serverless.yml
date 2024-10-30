@@ -19,11 +19,10 @@ provider:
   httpApi:
     cors: true
     authorizers:
-      userAuthorizer:
-        identitySource: $request.header.Authorization
-        issuerUrl: {"Fn::Join": ["", ["https://cognito-idp.us-east-1.amazonaws.com/", { Ref: UserPool }]]}
-        audience: { Ref: UserPoolClient }
-
+      apiKeyAuthorizer:
+        type: request
+        functionName: apiKeyAuth
+        identitySource: $request.header.api-key
 
 # Lambda functions
 functions:
@@ -35,7 +34,7 @@ functions:
           method: get
           path: /patients
           authorizer:
-            name: userAuthorizer
+            name: apiKeyAuthorizer
 
 # Auth functions
   login:
@@ -45,7 +44,8 @@ functions:
       - httpApi:
           method: post
           path: /auth/login
-
+          authorizer:
+            name: apiKeyAuthorizer
   signup:
     handler: src/auth/functions/signup.handler
     name: ${sls:stage}-signup
@@ -53,7 +53,9 @@ functions:
       - httpApi:
           method: post
           path: /auth/signup
-  
+          authorizer:
+            name: apiKeyAuthorizer  
+
   confirmSignup:
     handler: src/auth/functions/confirmSignup.handler
     name: ${sls:stage}-confirmSignup
@@ -61,6 +63,8 @@ functions:
       - httpApi:
           method: post
           path: /auth/confirmSignup
+          authorizer:
+            name: apiKeyAuthorizer
 
   resendCode:
     handler: src/auth/functions/resendCode.handler
@@ -69,6 +73,8 @@ functions:
       - httpApi:
           method: post
           path: /auth/resendCode
+          authorizer:
+            name: apiKeyAuthorizer
 
   forgotPassword:
     handler: src/auth/functions/forgotPassword.handler
@@ -77,6 +83,8 @@ functions:
       - httpApi:
           method: post
           path: /auth/forgotPassword
+          authorizer:
+            name: apiKeyAuthorizer
 
   confirmForgotPassword:
     handler: src/auth/functions/confirmForgotPassword.handler
@@ -85,6 +93,13 @@ functions:
       - httpApi:
           method: post
           path: /auth/confirmForgotPassword
+          authorizer:
+            name: apiKeyAuthorizer
+
+  # authorization:
+  apiKeyAuth:
+    handler: src/authorization/functions/apiKeyAuth.handler
+  
 
 resources:
   Resources:
