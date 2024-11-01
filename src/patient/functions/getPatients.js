@@ -9,10 +9,10 @@ import patientService from "../patient.service.js";
 const getPatients = async (event) => {
 
   try {
-    const message = await patientService.getPatients(event);
+    const data = await patientService.getPatients(event.body);
     return {
       statusCode: 200,
-      body: message,
+      body: data,
     };
   } catch (error) {
     return {

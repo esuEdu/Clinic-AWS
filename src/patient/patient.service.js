@@ -11,9 +11,13 @@ async function createPatient(payload) {
   }
 }
 
-async function getPatients(params) {
-  await new Promise((resolve) => setTimeout(resolve, 5));
-  return "Go Serverless v4.0! Your function executed successfully!";
+async function getPatients() {
+  try {
+    const data = await PatientModel.scan().exec();
+    return data;
+  } catch (error) {
+    throw error;
+  }
 }
 
 export default {
