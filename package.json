@@ -20,6 +20,7 @@
     "@middy/http-json-body-parser": "^4.7.0",
     "@middy/http-response-serializer": "^4.7.0",
     "@middy/http-security-headers": "^5.5.1",
+    "@middy/http-urlencode-path-parser": "^5.5.1",
     "dotenv": "^16.4.5",
     "dynamoose": "^4.0.2",
     "serverless": "^4.4.7"

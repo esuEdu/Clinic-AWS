@@ -12,10 +12,7 @@ const create = async (event) => {
     const data = await patientService.createPatient(event.body);
     const response = {
       statusCode: 200,
-      body: {
-        message: "Patient create successfully",
-        data,
-      },
+      body: data,
     };
     return response;
   } catch (error) {

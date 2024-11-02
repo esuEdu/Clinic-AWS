@@ -20,7 +20,19 @@ async function getPatients() {
   }
 }
 
+async function getPatient(payload) {
+  try {
+    const data = await PatientModel.query("PK")
+      .eq(`PATIENT#${payload.id}`)
+      .exec();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export default {
   createPatient,
   getPatients,
+  getPatient,
 };

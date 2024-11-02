@@ -42,11 +42,21 @@ functions:
 
   getPatients:
     handler: src/patient/functions/getPatients.handler
-    name: ${sls:stage}-getPatient
+    name: ${sls:stage}-getPatients
     events:
       - httpApi:
           method: get
           path: /patients
+          authorizer:
+            name: apiKeyAuthorizer
+
+  getPatient:
+    handler: src/patient/functions/getPatient.handler
+    name: ${sls:stage}-getPatient
+    events:
+      - httpApi:
+          method: get
+          path: /patient/{id}
           authorizer:
             name: apiKeyAuthorizer
 
@@ -114,6 +124,7 @@ functions:
   # authorization:
   apiKeyAuthorization:
     handler: src/authorization/functions/apiKeyAuthorization.handler
+    name: ${sls:stage}-apiKeyAuthorization
   
 
 resources:
