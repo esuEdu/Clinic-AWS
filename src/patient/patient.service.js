@@ -36,9 +36,21 @@ async function getPatient(payload) {
 
 async function updatePatient(payload) {
   try {
-    const data = await PatientModel.update({ PK: `PATIENT#${payload.id}` }, payload);
+    const data = await PatientModel.update(
+      { PK: `PATIENT#${payload.id}` },
+      payload
+    );
     const { PK, ...result } = data;
     return result;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function deletePatient(payload) {
+  try {
+    await PatientModel.delete({ PK: `PATIENT#${payload.id}` });
+    return
   } catch (error) {
     throw error;
   }
@@ -49,4 +61,5 @@ export default {
   getPatients,
   getPatient,
   updatePatient,
+  deletePatient,
 };

@@ -70,6 +70,16 @@ functions:
           authorizer:
             name: apiKeyAuthorizer
 
+  deletePatient:
+    handler: src/patient/functions/deletePatient.handler
+    name: ${sls:stage}-deletePatient
+    events:
+      - httpApi:
+          method: delete
+          path: /patient
+          authorizer:
+            name: apiKeyAuthorizer
+            
 # Auth functions
   login:
     handler: src/auth/functions/login.handler
