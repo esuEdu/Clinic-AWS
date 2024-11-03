@@ -9,6 +9,7 @@ const patientSchema = new dynamoose.Schema(
     id: {
       type: String,
       required: true,
+      mutable: false,
     },
     name: {
       type: String,

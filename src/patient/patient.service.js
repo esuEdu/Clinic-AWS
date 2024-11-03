@@ -14,7 +14,7 @@ async function createPatient(payload) {
 async function getPatients() {
   try {
     const data = await PatientModel.scan().exec();
-    return data;
+    return data.map(({ PK, ...result }) => result);
   } catch (error) {
     throw error;
   }
@@ -25,7 +25,20 @@ async function getPatient(payload) {
     const data = await PatientModel.query("PK")
       .eq(`PATIENT#${payload.id}`)
       .exec();
-    return data;
+
+    const { PK, ...result } = data[0];
+
+    return result;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function updatePatient(payload) {
+  try {
+    const data = await PatientModel.update({ PK: `PATIENT#${payload.id}` }, payload);
+    const { PK, ...result } = data;
+    return result;
   } catch (error) {
     throw error;
   }
@@ -35,4 +48,5 @@ export default {
   createPatient,
   getPatients,
   getPatient,
+  updatePatient,
 };

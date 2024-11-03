@@ -60,6 +60,16 @@ functions:
           authorizer:
             name: apiKeyAuthorizer
 
+  updatePatient:
+    handler: src/patient/functions/updatePatient.handler
+    name: ${sls:stage}-updatePatient
+    events:
+      - httpApi:
+          method: put
+          path: /patient
+          authorizer:
+            name: apiKeyAuthorizer
+
 # Auth functions
   login:
     handler: src/auth/functions/login.handler
