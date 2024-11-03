@@ -4,27 +4,31 @@ import httpJsonBodyParser from "@middy/http-json-body-parser";
 import httpHeaderNormalizer from "@middy/http-header-normalizer";
 import httpContentNegotiation from "@middy/http-content-negotiation";
 import httpResponseSerializer from "@middy/http-response-serializer";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import patientService from "../patient.service.js";
 
-const getPatients = async (event) => {
+const create = async (event) => {
   try {
-    const data = await patientService.getPatients(event.body);
-    return {
+    const data = await patientService.createPatient(event.body);
+    const response = {
       statusCode: 200,
       body: data,
     };
+    return response;
   } catch (error) {
-    return {
+    const response = {
       statusCode: 400,
       body: {
-        message: "Error getting patients",
+        message: "Failed to create patient",
         error: error.message,
       },
     };
+    return response;
   }
 };
 
 export const handler = middy()
+  .use(httpSecurityHeaders())
   .use(httpHeaderNormalizer())
   .use(httpContentNegotiation())
   .use(
@@ -48,4 +52,4 @@ export const handler = middy()
   )
   .use(httpErrorHandler())
   .use(httpJsonBodyParser({ disableContentTypeError: true }))
-  .handler(getPatients);
+  .handler(create);

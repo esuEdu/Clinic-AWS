@@ -1,14 +1,16 @@
 import middy from "@middy/core";
 import httpErrorHandler from "@middy/http-error-handler";
+import httpUrlencodePathParametersParserMiddleware from "@middy/http-urlencode-path-parser";
 import httpJsonBodyParser from "@middy/http-json-body-parser";
 import httpHeaderNormalizer from "@middy/http-header-normalizer";
 import httpContentNegotiation from "@middy/http-content-negotiation";
 import httpResponseSerializer from "@middy/http-response-serializer";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import patientService from "../patient.service.js";
 
-const getPatients = async (event) => {
+const getPatient = async (event) => {
   try {
-    const data = await patientService.getPatients(event.body);
+    const data = await patientService.getPatient(event.body);
     return {
       statusCode: 200,
       body: data,
@@ -17,7 +19,7 @@ const getPatients = async (event) => {
     return {
       statusCode: 400,
       body: {
-        message: "Error getting patients",
+        message: "Error getting patient",
         error: error.message,
       },
     };
@@ -25,8 +27,10 @@ const getPatients = async (event) => {
 };
 
 export const handler = middy()
+  .use(httpSecurityHeaders())
   .use(httpHeaderNormalizer())
   .use(httpContentNegotiation())
+  .use(httpUrlencodePathParametersParserMiddleware())
   .use(
     httpResponseSerializer({
       serializers: [
@@ -48,4 +52,4 @@ export const handler = middy()
   )
   .use(httpErrorHandler())
   .use(httpJsonBodyParser({ disableContentTypeError: true }))
-  .handler(getPatients);
+  .handler(getPatient);

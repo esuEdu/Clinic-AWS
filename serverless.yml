@@ -7,6 +7,8 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: us-east-1
+  environment:
+    STAGE: ${sls:stage}
   iam:
     role:
       statements:
@@ -21,14 +23,26 @@ provider:
     authorizers:
       apiKeyAuthorizer:
         type: request
-        functionName: apiKeyAuth
+        functionName: apiKeyAuthorization
         identitySource: $request.header.api-key
 
 # Lambda functions
 functions:
+
+  # Patient functions
+  createPatient:
+    handler: src/patient/functions/createPatient.handler
+    name: ${sls:stage}-createPatient
+    events:
+      - httpApi:
+          method: post
+          path: /patient
+          authorizer:
+            name: apiKeyAuthorizer
+
   getPatients:
     handler: src/patient/functions/getPatients.handler
-    name: ${sls:stage}-getPatient
+    name: ${sls:stage}-getPatients
     events:
       - httpApi:
           method: get
@@ -36,6 +50,36 @@ functions:
           authorizer:
             name: apiKeyAuthorizer
 
+  getPatient:
+    handler: src/patient/functions/getPatient.handler
+    name: ${sls:stage}-getPatient
+    events:
+      - httpApi:
+          method: get
+          path: /patient
+          authorizer:
+            name: apiKeyAuthorizer
+
+  updatePatient:
+    handler: src/patient/functions/updatePatient.handler
+    name: ${sls:stage}-updatePatient
+    events:
+      - httpApi:
+          method: put
+          path: /patient
+          authorizer:
+            name: apiKeyAuthorizer
+
+  deletePatient:
+    handler: src/patient/functions/deletePatient.handler
+    name: ${sls:stage}-deletePatient
+    events:
+      - httpApi:
+          method: delete
+          path: /patient
+          authorizer:
+            name: apiKeyAuthorizer
+            
 # Auth functions
   login:
     handler: src/auth/functions/login.handler
@@ -46,6 +90,7 @@ functions:
           path: /auth/login
           authorizer:
             name: apiKeyAuthorizer
+
   signup:
     handler: src/auth/functions/signup.handler
     name: ${sls:stage}-signup
@@ -97,12 +142,33 @@ functions:
             name: apiKeyAuthorizer
 
   # authorization:
-  apiKeyAuth:
-    handler: src/authorization/functions/apiKeyAuth.handler
+  apiKeyAuthorization:
+    handler: src/authorization/functions/apiKeyAuthorization.handler
+    name: ${sls:stage}-apiKeyAuthorization
   
 
 resources:
   Resources:
+  # Dynamo Patient Table
+    PatientTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${sls:stage}-PatientTable
+        AttributeDefinitions:
+          - AttributeName: PK # Patient id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK # Patient id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        OnDemandThroughput:
+          MaxReadRequestUnits: 5
+          MaxWriteRequestUnits: 5
+        Tags:
+          - Key: Name
+            Value: PatientTable
+
+
   # Cognito User Pool
     UserPool:
       Type: AWS::Cognito::UserPool
@@ -171,5 +237,6 @@ resources:
       Properties:
         GroupName: ${sls:stage}-Users
         Description: Users with basic permissions
+        Precedence: 0
         UserPoolId:
           Ref: UserPool

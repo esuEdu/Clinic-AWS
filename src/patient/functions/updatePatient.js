@@ -6,9 +6,9 @@ import httpContentNegotiation from "@middy/http-content-negotiation";
 import httpResponseSerializer from "@middy/http-response-serializer";
 import patientService from "../patient.service.js";
 
-const getPatients = async (event) => {
+const update = async (event) => {
   try {
-    const data = await patientService.getPatients(event.body);
+    const data = await patientService.updatePatient(event.body);
     return {
       statusCode: 200,
       body: data,
@@ -17,7 +17,7 @@ const getPatients = async (event) => {
     return {
       statusCode: 400,
       body: {
-        message: "Error getting patients",
+        message: "Error updating patient",
         error: error.message,
       },
     };
@@ -48,4 +48,4 @@ export const handler = middy()
   )
   .use(httpErrorHandler())
   .use(httpJsonBodyParser({ disableContentTypeError: true }))
-  .handler(getPatients);
+  .handler(update);
