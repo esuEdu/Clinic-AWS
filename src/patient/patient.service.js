@@ -22,11 +22,13 @@ async function getPatients() {
 
 async function getPatient(payload) {
   try {
-    const data = await PatientModel.query("PK")
-      .eq(`PATIENT#${payload.id}`)
-      .exec();
+    const data = await PatientModel.get({ PK: `PATIENT#${payload.id}` });
 
-    const { PK, ...result } = data[0];
+    if (!data) {
+      throw new Error(`Patient with ID ${payload.id} not found`);
+    }
+
+    const { PK, ...result } = data;
 
     return result;
   } catch (error) {
@@ -50,7 +52,7 @@ async function updatePatient(payload) {
 async function deletePatient(payload) {
   try {
     await PatientModel.delete({ PK: `PATIENT#${payload.id}` });
-    return
+    return;
   } catch (error) {
     throw error;
   }

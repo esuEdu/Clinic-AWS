@@ -56,7 +56,7 @@ functions:
     events:
       - httpApi:
           method: get
-          path: /patient/{id}
+          path: /patient
           authorizer:
             name: apiKeyAuthorizer
 

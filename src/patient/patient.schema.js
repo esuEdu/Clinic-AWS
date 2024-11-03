@@ -26,7 +26,6 @@ const patientSchema = new dynamoose.Schema(
     dateOfBirth: {
       type: [Date, String],
       required: true,
-      onGet: (value) => new Date(value),
       onSet: (value) => (value instanceof Date ? value : new Date(value)),
     },
     gender: {
