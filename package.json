@@ -24,5 +24,8 @@
     "dotenv": "^16.4.5",
     "dynamoose": "^4.0.2",
     "serverless": "^4.4.7"
+  },
+  "devDependencies": {
+    "serverless-offline": "^14.3.3"
   }
 }
