@@ -9,6 +9,7 @@ import httpSecurityHeaders from "@middy/http-security-headers";
 import patientService from "../patient.service.js";
 
 const getPatient = async (event) => {
+  console.log("Event", event);
   try {
     const data = await patientService.getPatient(event.body);
     return {

@@ -3,6 +3,9 @@ org: eduardorvieira
 # "service" is the name of this project. This will also be added to your AWS resource names.
 service: Clinic-aws
 
+plugins:
+  - serverless-offline
+
 provider:
   name: aws
   runtime: nodejs20.x
@@ -19,17 +22,22 @@ provider:
             - "cognito-idp:*"
           Resource: "*"
   httpApi:
-    cors: true
     authorizers:
-      apiKeyAuthorizer:
-        type: request
-        functionName: apiKeyAuthorization
-        identitySource: $request.header.api-key
+      cognitoAuthorizer:
+        identitySource: 
+          - $request.header.Authorization
+        issuerUrl: {"Fn::Join": ["", ["https://cognito-idp.us-east-1.amazonaws.com/", { Ref: CognitoUserPool }]]}
+        audience: 
+          - Ref: CognitoUserPoolClient
+              
+custom:
+  stage: ${sls:stage}
+  coginitoFiles:
+    userPool: ${file(resources/cognito-user-pool.yml)}
+    groups: ${file(resources/cognito-groups.yml)}
 
 # Lambda functions
 functions:
-
-  # Patient functions
   createPatient:
     handler: src/patient/functions/createPatient.handler
     name: ${sls:stage}-createPatient
@@ -37,8 +45,6 @@ functions:
       - httpApi:
           method: post
           path: /patient
-          authorizer:
-            name: apiKeyAuthorizer
 
   getPatients:
     handler: src/patient/functions/getPatients.handler
@@ -47,8 +53,6 @@ functions:
       - httpApi:
           method: get
           path: /patients
-          authorizer:
-            name: apiKeyAuthorizer
 
   getPatient:
     handler: src/patient/functions/getPatient.handler
@@ -57,8 +61,7 @@ functions:
       - httpApi:
           method: get
           path: /patient
-          authorizer:
-            name: apiKeyAuthorizer
+          authorizer: cognitoAuthorizer
 
   updatePatient:
     handler: src/patient/functions/updatePatient.handler
@@ -67,8 +70,6 @@ functions:
       - httpApi:
           method: put
           path: /patient
-          authorizer:
-            name: apiKeyAuthorizer
 
   deletePatient:
     handler: src/patient/functions/deletePatient.handler
@@ -77,8 +78,6 @@ functions:
       - httpApi:
           method: delete
           path: /patient
-          authorizer:
-            name: apiKeyAuthorizer
             
 # Auth functions
   login:
@@ -88,8 +87,6 @@ functions:
       - httpApi:
           method: post
           path: /auth/login
-          authorizer:
-            name: apiKeyAuthorizer
 
   signup:
     handler: src/auth/functions/signup.handler
@@ -98,8 +95,6 @@ functions:
       - httpApi:
           method: post
           path: /auth/signup
-          authorizer:
-            name: apiKeyAuthorizer  
 
   confirmSignup:
     handler: src/auth/functions/confirmSignup.handler
@@ -108,8 +103,6 @@ functions:
       - httpApi:
           method: post
           path: /auth/confirmSignup
-          authorizer:
-            name: apiKeyAuthorizer
 
   resendCode:
     handler: src/auth/functions/resendCode.handler
@@ -118,8 +111,6 @@ functions:
       - httpApi:
           method: post
           path: /auth/resendCode
-          authorizer:
-            name: apiKeyAuthorizer
 
   forgotPassword:
     handler: src/auth/functions/forgotPassword.handler
@@ -128,8 +119,6 @@ functions:
       - httpApi:
           method: post
           path: /auth/forgotPassword
-          authorizer:
-            name: apiKeyAuthorizer
 
   confirmForgotPassword:
     handler: src/auth/functions/confirmForgotPassword.handler
@@ -138,105 +127,28 @@ functions:
       - httpApi:
           method: post
           path: /auth/confirmForgotPassword
-          authorizer:
-            name: apiKeyAuthorizer
-
-  # authorization:
-  apiKeyAuthorization:
-    handler: src/authorization/functions/apiKeyAuthorization.handler
-    name: ${sls:stage}-apiKeyAuthorization
-  
 
 resources:
-  Resources:
+  - Resources:
   # Dynamo Patient Table
-    PatientTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${sls:stage}-PatientTable
-        AttributeDefinitions:
-          - AttributeName: PK # Patient id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: PK # Patient id
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
-        OnDemandThroughput:
-          MaxReadRequestUnits: 5
-          MaxWriteRequestUnits: 5
-        Tags:
-          - Key: Name
-            Value: PatientTable
+      PatientTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+          TableName: ${sls:stage}-PatientTable
+          AttributeDefinitions:
+            - AttributeName: PK # Patient id
+              AttributeType: S
+          KeySchema:
+            - AttributeName: PK # Patient id
+              KeyType: HASH
+          BillingMode: PAY_PER_REQUEST
+          OnDemandThroughput:
+            MaxReadRequestUnits: 5
+            MaxWriteRequestUnits: 5
 
+      HttpApi:
+        DependsOn: CognitoUserPool
+        
+  - ${self:custom.coginitoFiles.userPool}
+  - ${self:custom.coginitoFiles.groups}
 
-  # Cognito User Pool
-    UserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        UserPoolName: ${sls:stage}-ClinicUserPool
-        Policies:
-          PasswordPolicy:
-            MinimumLength: 8
-            RequireLowercase: true
-            RequireNumbers: true
-            RequireSymbols: true
-            RequireUppercase: true
-        Schema:
-          - Name: email
-            Required: true
-            Mutable: true
-        UsernameAttributes:
-          - email
-        AutoVerifiedAttributes:
-          - email
-        MfaConfiguration: OFF
-        EmailVerificationSubject: Your verification code
-        EmailVerificationMessage: Your verification code is {####}
-        SmsVerificationMessage: Your verification code is {####}
-        SmsAuthenticationMessage: Your authentication code is {####}
-        UserPoolTags:
-          "Name": "${sls:stage}-ClinicUserPool"
-
-    # Cognito User Pool Client
-    UserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        ClientName: ${sls:stage}-ClinicUserPoolClient
-        UserPoolId:
-          Ref: UserPool
-        GenerateSecret: false
-        ExplicitAuthFlows:
-          - ADMIN_NO_SRP_AUTH
-          - USER_PASSWORD_AUTH
-        SupportedIdentityProviders:
-          - COGNITO
-        AllowedOAuthFlowsUserPoolClient: true
-        AllowedOAuthFlows:
-          - code
-        AllowedOAuthScopes:
-          - email
-          - openid
-          - profile
-        CallbackURLs:
-          - http://localhost:3000/callback
-        LogoutURLs:
-          - http://localhost:3000/callback
-
-    # Cognito User Pool Groups
-    AdminPoolGroup:
-      Type: AWS::Cognito::UserPoolGroup
-      Properties:
-        GroupName: ${sls:stage}-Admins
-        Description: Admins users with elevated permissions
-        Precedence: 1
-        UserPoolId:
-          Ref: UserPool
-
-    UserPoolGroup:
-      Type: AWS::Cognito::UserPoolGroup
-      Properties:
-        GroupName: ${sls:stage}-Users
-        Description: Users with basic permissions
-        Precedence: 0
-        UserPoolId:
-          Ref: UserPool

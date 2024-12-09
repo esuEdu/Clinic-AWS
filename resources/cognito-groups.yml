@@ -1,0 +1,16 @@
+Resources:
+  # Cognito Doctor Group
+  CognitoDoctorGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: Doctor
+      UserPoolId:
+        Ref: CognitoUserPool
+
+  # Cognito Patient Group
+  CognitoPatientGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: Patient
+      UserPoolId:
+        Ref: CognitoUserPool

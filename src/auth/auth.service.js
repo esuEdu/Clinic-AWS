@@ -143,6 +143,22 @@ async function confirmForgotPassword(event) {
   }
 }
 
+async function authorizer(payload) {
+  const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
+
+  const params = {
+    AccessToken: payload.authorizationToken,
+  };
+
+  try {
+    const data = await client.send(new GetUserCommand(params));
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 export default {
   login,
   signup,
@@ -150,4 +166,5 @@ export default {
   resendCode,
   forgotPassword,
   confirmForgotPassword,
+  authorizer,
 };
